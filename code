@@ -1,0 +1,130 @@
+CREATE TABLE customer (
+  cust_id INT PRIMARY KEY,
+  custfirstname VARCHAR(20),
+  custlastname VARCHAR(20),
+  address VARCHAR(40),
+  status VARCHAR(20)
+);
+
+CREATE TABLE payment (
+  payment_id INT PRIMARY KEY,
+  customer_id INT,
+  payment_date DATE
+);
+
+CREATE TABLE employee (
+  employee_id INT PRIMARY KEY,
+  fname VARCHAR(20),
+  lname VARCHAR(20),
+  job_department VARCHAR(20),
+  address VARCHAR(40),
+  contact_add VARCHAR(10),
+  username VARCHAR(20),
+  password VARCHAR(20)
+);
+
+CREATE TABLE reservation (
+  reservation_id INT PRIMARY KEY,
+  customer_id INT,
+  room_id INT,
+  reservation_date DATE,
+  date_in DATE,
+  date_out DATE,
+  date_range VARCHAR(20),
+  FOREIGN KEY (customer_id) REFERENCES customer(cust_id),
+  FOREIGN KEY (room_id) REFERENCES room_info(room_id) ON DELETE CASCADE
+);
+
+CREATE TABLE room_info (
+  room_id INT PRIMARY KEY,
+  class_id INT,
+  description VARCHAR(20),
+  price INT
+);
+
+CREATE TABLE room_class (
+  class_id INT PRIMARY KEY,
+  name VARCHAR(20)
+);
+
+CREATE TABLE reports (
+  report_id INT PRIMARY KEY,
+  transaction_id INT,
+  information VARCHAR(40),
+  report_date DATE
+);
+
+CREATE TABLE transaction_info (
+  transaction_id INT PRIMARY KEY,
+  transaction_name VARCHAR(20),
+  customer_id INT,
+  payment_id INT,
+  employee_id INT,
+  reservation_id INT,
+  transaction_date DATE,
+  FOREIGN KEY (customer_id) REFERENCES customer(cust_id) ON DELETE CASCADE,
+  FOREIGN KEY (payment_id) REFERENCES payment(payment_id) ON DELETE CASCADE,
+  FOREIGN KEY (employee_id) REFERENCES employee(employee_id) ON DELETE CASCADE,
+  FOREIGN KEY (reservation_id) REFERENCES reservation(reservation_id) ON DELETE CASCADE
+);
+
+
+
+-- Insert data into the customer table
+INSERT INTO customer (cust_id, custfirstname, custlastname, address, status)
+VALUES
+  (1, 'John', 'Doe', '123 Main St', 'Active'),
+  (2, 'Jane', 'Smith', '456 Elm St', 'Inactive');
+
+-- Insert data into the payment table
+INSERT INTO payment (payment_id, customer_id, payment_date)
+VALUES
+  (101, 1, '2023-08-15'),
+  (102, 2, '2023-08-14');
+
+-- Insert data into the employee table
+INSERT INTO employee (employee_id, fname, lname, job_department, address, contact_add, username, password)
+VALUES
+  (201, 'Michael', 'Johnson', 'HR', '789 Oak St', '555-1234', 'mj123', 'mypassword'),
+  (202, 'Emily', 'Williams', 'IT', '567 Pine St', '555-5678', 'ew456', 'secretpass');
+
+-- Insert data into the room_info table
+INSERT INTO room_info (room_id, class_id, description, price)
+VALUES
+  (301, 1, 'Standard Room', 100),
+  (302, 2, 'Deluxe Suite', 200);
+
+-- Insert data into the room_class table
+INSERT INTO room_class (class_id, name)
+VALUES
+  (1, 'Standard'),
+  (2, 'Deluxe');
+
+-- Insert data into the reservation table
+INSERT INTO reservation (reservation_id, customer_id, room_id, reservation_date, date_in, date_out, date_range)
+VALUES
+  (401, 1, 301, '2023-08-16', '2023-08-20', '2023-08-25', '5 days'),
+  (402, 2, 302, '2023-08-17', '2023-08-22', '2023-08-27', '5 days');
+
+-- Insert data into the reports table
+INSERT INTO reports (report_id, transaction_id, information, report_date)
+VALUES
+  (501, 101, 'Successful payment', '2023-08-15'),
+  (502, 102, 'Failed payment', '2023-08-14');
+
+-- Insert data into the transaction_info table
+INSERT INTO transaction_info (transaction_id, transaction_name, customer_id, payment_id, employee_id, reservation_id, transaction_date)
+VALUES
+  (601, 'Room Reservation', 1, 101, 201, 401, '2023-08-16'),
+  (602, 'Room Payment', 2, 102, 202, 402, '2023-08-17');
+
+*/
+
+select customer.custfirstname, customer.custlastname 
+from customer
+join transaction_info 
+on customer.cust_id= transaction_info.customer_id
+where transaction_info.transaction_id=(
+  select transaction_id from reports
+  where information='Successful payment'
+);
